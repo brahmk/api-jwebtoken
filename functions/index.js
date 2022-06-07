@@ -6,7 +6,11 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 
 const users = [
-  { id: 1, email: "todd@bocacode.com", password: "abc123" },
+  {
+    id: 1,
+    email: "todd@bocacode.com",
+    password: "$2b$10$WwhgVbFf9AJm5WWwpKVMYuzW.SYUyd5EYrl9275ujO62bzcQfiBgy",
+  },
   { id: 2, email: "damien@bocacode.com", password: "def456" },
   { id: 3, email: "vitoria@bocacode.com", password: "ghi789" },
 ];
@@ -26,17 +30,17 @@ app.post("/login", (req, res) => {
   );
 
   if (!user) {
-    res.status(401).send("invalid email or password");
+    res.status(401).send({ error: "invalid email or password" });
     return;
   }
-  user.password = undefined; // remove pw from user object
+  //user.password = undefined; // remove pw from user object
   //create and sign a token to send back
-  const token = jwt.sign(user, mySecretKey, { expiresIn: "1h" });
-  res.send(token); //{ id: 1, email: "todd@bocacode.com", password: "abc123" }
+  const token = jwt.sign(user, mySecretKey, { expiresIn: "20h" });
+  res.send({ token }); //{ id: 1, email: "todd@bocacode.com", password: "abc123" }
 });
 
 app.get("/public", (req, res) => {
-  res.send("Welcome"); //anyone can see this
+  res.send({ message: "Welcome" }); //anyone can see this
 });
 
 //requires token to see!
@@ -44,16 +48,16 @@ app.get("/public", (req, res) => {
 app.get("/private", (req, res) => {
   const token = req.headers.authorization || "";
   if (!token) {
-    res.status(401).send("MEMBERS ONLY");
+    res.status(401).send({ error: "MEMBERS ONLY" });
     return;
   }
 
   jwt.verify(token, mySecretKey, (err, decoded) => {
     if (err) {
-      res.status(401).send("MEMBERS ONLY" + err);
+      res.status(401).send({ error: "MEMBERS ONLY" } + err);
       return;
     }
-    res.send(`welcome ${decoded.email}!`);
+    res.send({ message: `welcome ${decoded.email}!` });
   });
 });
 
